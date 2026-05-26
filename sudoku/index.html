@@ -231,7 +231,7 @@ h1 {
         </div>
         <div id="board" class="board" aria-label="Sudoku board"></div>
         <div id="message" class="message" aria-live="polite"></div>
-        <p class="hint">Drag a number and drop it onto an empty cell, or click a cell then click a number</p>
+        <p class="hint">Drag a number and drop it onto an empty cell, or click a cell then click a number. Double-click to erase.</p>
         <div class="number-pad" aria-label="Number pad">
             <div class="num-btn" draggable="true" data-num="1">1</div>
             <div class="num-btn" draggable="true" data-num="2">2</div>
@@ -391,6 +391,7 @@ h1 {
                     cell.addEventListener('dragleave', onDragLeave);
                     cell.addEventListener('drop', onDrop);
                     cell.addEventListener('click', onCellClick);
+                    cell.addEventListener('dblclick', onCellDblClick);
                 }
 
                 boardEl.appendChild(cell);
@@ -447,6 +448,16 @@ h1 {
             row: parseInt(cell.dataset.row, 10),
             col: parseInt(cell.dataset.col, 10)
         };
+    }
+
+    // --- Double-click to erase ---
+
+    function onCellDblClick(e) {
+        const row = parseInt(e.currentTarget.dataset.row, 10);
+        const col = parseInt(e.currentTarget.dataset.col, 10);
+        if (board[row][col] !== 0) {
+            placeNumber(row, col, 0);
+        }
     }
 
     // --- Place Number ---
