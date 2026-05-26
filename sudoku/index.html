@@ -110,6 +110,14 @@ h1 {
     color: #f5c842;
 }
 
+.cell.editable[draggable="true"] {
+    cursor: grab;
+}
+
+.cell.editable[draggable="true"]:active {
+    cursor: grabbing;
+}
+
 .cell.editable.drag-over {
     background: #2d4a7a;
     box-shadow: inset 0 0 8px rgba(233, 69, 96, 0.5);
@@ -385,6 +393,8 @@ h1 {
                     cell.classList.add('editable');
                     if (board[row][col] !== 0) {
                         cell.textContent = board[row][col];
+                        cell.draggable = true;
+                        cell.addEventListener('dragstart', onCellDragStart);
                     }
                     cell.addEventListener('dragover', onDragOver);
                     cell.addEventListener('dragenter', onDragEnter);
@@ -401,8 +411,20 @@ h1 {
 
     // --- Drag and Drop ---
 
+    let dragSource = null; // tracks if drag started from a cell
+
+    function onCellDragStart(e) {
+        const row = parseInt(e.currentTarget.dataset.row, 10);
+        const col = parseInt(e.currentTarget.dataset.col, 10);
+        const num = board[row][col];
+        dragSource = { row: row, col: col };
+        e.dataTransfer.setData('text/plain', String(num));
+        e.dataTransfer.effectAllowed = 'move';
+    }
+
     document.querySelectorAll('.num-btn').forEach(btn => {
         btn.addEventListener('dragstart', (e) => {
+            dragSource = null; // not from a cell
             e.dataTransfer.setData('text/plain', btn.dataset.num);
             e.dataTransfer.effectAllowed = 'copy';
         });
@@ -434,6 +456,13 @@ h1 {
         const row = parseInt(e.currentTarget.dataset.row, 10);
         const col = parseInt(e.currentTarget.dataset.col, 10);
         const num = parseInt(e.dataTransfer.getData('text/plain'), 10);
+
+        // If dragged from another cell, clear the source
+        if (dragSource && (dragSource.row !== row || dragSource.col !== col)) {
+            board[dragSource.row][dragSource.col] = 0;
+        }
+        dragSource = null;
+
         placeNumber(row, col, num);
     }
 
@@ -580,6 +609,7 @@ h1 {
     }
 
     newGameBtn.addEventListener('click', newGame);
+    difficultyEl.addEventListener('change', newGame);
 
     // --- Keyboard Support ---
 
